@@ -10,9 +10,10 @@ const app = express();
 // Middleware
 // تكوين CORS للسماح بالطلبات من الواجهة الأمامية
 app.use(cors({
-  origin: ['http://localhost:3000', 'https://your-frontend-vercel-url.vercel.app'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true
+  origin: ['http://localhost:3000', 'https://predictbattle-frontend.vercel.app'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json());
