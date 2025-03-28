@@ -88,20 +88,13 @@ exports.joinSession = async (req, res) => {
     await session.save();
 
     // إعادة استعلام الجلسة بعد التحديث مع بيانات المشاركين
-    const updatedSession = await Session.findById(session._id).populate('participants', 'username');
+    const updatedSession = await Session.findById(session._id)
+      .populate('participants', 'username')
+      .populate('predictions.user', 'username');
 
     res.status(200).json({
       success: true,
-      session: {
-        _id: updatedSession._id,
-        title: updatedSession.title,
-        code: updatedSession.code,
-        maxPlayers: updatedSession.maxPlayers,
-        participants: updatedSession.participants,
-        predictions: updatedSession.predictions,
-        isComplete: updatedSession.isComplete,
-        createdAt: updatedSession.createdAt
-      }
+      session: updatedSession
     });
   } catch (error) {
     console.error('خطأ في الانضمام إلى الجلسة:', error);
@@ -113,6 +106,7 @@ exports.joinSession = async (req, res) => {
 exports.submitPrediction = async (req, res) => {
   try {
     const { sessionId, text } = req.body;
+    console.log('طلب إرسال توقع:', { sessionId, text, userId: req.user._id });
 
     // البحث عن الجلسة
     const session = await Session.findById(sessionId);
@@ -157,6 +151,12 @@ exports.submitPrediction = async (req, res) => {
       .populate('participants', 'username')
       .populate('predictions.user', 'username');
 
+    console.log('تم تحديث الجلسة بنجاح:', {
+      sessionId,
+      predictionsCount: updatedSession.predictions.length,
+      isComplete: updatedSession.isComplete
+    });
+
     res.status(200).json({
       success: true,
       session: updatedSession
@@ -171,6 +171,7 @@ exports.submitPrediction = async (req, res) => {
 exports.getSession = async (req, res) => {
   try {
     const { id } = req.params;
+    console.log('طلب جلب بيانات الجلسة:', id);
 
     // البحث عن الجلسة مع بيانات المستخدمين
     const session = await Session.findById(id)
@@ -180,6 +181,12 @@ exports.getSession = async (req, res) => {
     if (!session) {
       return res.status(404).json({ message: 'لم يتم العثور على الجلسة' });
     }
+
+    console.log('تم إرجاع بيانات الجلسة:', {
+      sessionId: id,
+      predictionsCount: session.predictions.length,
+      participantsCount: session.participants.length
+    });
 
     res.status(200).json({
       success: true,
